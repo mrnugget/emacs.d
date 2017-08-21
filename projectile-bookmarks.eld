@@ -1,0 +1,1 @@
+("~/.emacs.d/" "~/code/clones/guile/" "~/Dropbox/ctbig/" "~/work/triebwerk/" "~/org/" "~/code/go/src/github.com/mrnugget/monkey/")
