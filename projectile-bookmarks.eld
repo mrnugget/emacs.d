@@ -1,1 +1,1 @@
-("~/.emacs.d/" "~/code/clones/guile/" "~/Dropbox/ctbig/" "~/work/triebwerk/" "~/org/" "~/code/go/src/github.com/mrnugget/monkey/")
+("~/.emacs.d/" "~/code/go/src/github.com/mrnugget/monkey/" "~/code/go/src/github.com/mrnugget/fzz/" "~/org/" "~/work/triebwerk/" "~/Dropbox/notes/" "~/Dropbox/ctbig/" "~/code/clones/guile/")

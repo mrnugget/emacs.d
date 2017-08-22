@@ -55,14 +55,14 @@
 ;; projectile
 (require 'projectile)
 (projectile-mode 1)
-;; Start projectile in dired mode when switching
-(setq projectile-switch-project-action #'projectile-dired)
 
 ;; ivy
 (require 'ivy)
 (ivy-mode 1)
 (setq ivy-use-virtual-buffers t)
 (setq ivy-count-format "(%d/%d) ")
+(global-set-key (kbd "M-x") 'counsel-M-x)
+(define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
 
 ;; counsel-projectil
 (require 'counsel-projectile)
@@ -87,6 +87,7 @@
   "k" 'kill-buffer
   "x" 'counsel-M-x ;; counsel-M-x comes from ivy
   "s" 'swiper ;; swiper is included in ivy
+  "cp" 'counsel-projectile-switch-project
   "fi" 'counsel-projectile-find-file
   "fb" 'counsel-projectile-switch-to-buffer)
 
@@ -106,16 +107,19 @@
 (defun my-go-mode-hook ()
   (add-hook 'before-save-hook 'gofmt-before-save) ; gofmt before every save
   (setq gofmt-command "goimports")                ; gofmt uses invokes goimports
+
   (if (not (string-match "go" compile-command))   ; set compile command default
       (set (make-local-variable 'compile-command)
-           "go build -v && go test -v && go vet"))
+           "go test -v && go vet"))
 
-  (local-set-key (kbd "M-p") 'compile)            ; Invoke compiler
+  (local-set-key (kbd "M-p") 'projectile-compile-project) ; Invoke compiler
   (local-set-key (kbd "M-P") 'recompile)          ; Redo most recent compile cmd
-  (local-set-key (kbd "M-.") 'godef-jump)         ; Go to definition
+  ;;(local-set-key (kbd "C-]") 'godef-jump)         ; Go to definition
   (local-set-key (kbd "M-*") 'pop-tag-mark)       ; Return from whence you came
   (local-set-key (kbd "M-]") 'next-error)         ; Go to next error (or msg)
   (local-set-key (kbd "M-[") 'previous-error)     ; Go to previous error or msg
+
+  (evil-local-set-key 'normal (kbd "C-]") 'godef-jump)
 
   ;; guru settings
   (go-guru-hl-identifier-mode))
