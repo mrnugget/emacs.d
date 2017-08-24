@@ -8,6 +8,8 @@
 (global-linum-mode)
 ;; disable bell
 (setq ring-bell-function 'ignore)
+;; winner mode -- C-c left/right
+(winner-mode t)
 
 ;; utf-8
 (prefer-coding-system 'utf-8)
@@ -107,11 +109,6 @@
  "fr" 'ivy-resume
  "ms" 'magit-status)
 
-;; geiser
-;; (eval-after-load "geiser-impl"
-;;   '(add-to-list 'geiser-implementations-alist
-;;                 '((dir "/Users/mrnugget/code/guile") guile))
-
 ;; use spaces instead of tabs
 (setq-default evil-shift-width 2)
 (setq-default indent-tabs-mode nil)
@@ -129,7 +126,6 @@
 
  (local-set-key (kbd "M-p") 'projectile-compile-project) ; Invoke compiler
  (local-set-key (kbd "M-P") 'recompile)          ; Redo most recent compile cmd
- ;;(local-set-key (kbd "C-]") 'godef-jump)         ; Go to definition
  (local-set-key (kbd "M-*") 'pop-tag-mark)       ; Return from whence you came
  (local-set-key (kbd "M-]") 'next-error)         ; Go to next error (or msg)
  (local-set-key (kbd "M-[") 'previous-error)     ; Go to previous error or msg
@@ -139,7 +135,6 @@
  ;; guru settings
  (go-guru-hl-identifier-mode))
 
-;; Connect go-mode-hook with the function we just defined
 (add-hook 'go-mode-hook 'my-go-mode-hook)
 
 (defun my-switch-project-hook ()
