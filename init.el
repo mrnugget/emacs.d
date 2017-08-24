@@ -2,6 +2,7 @@
 (tool-bar-mode -1)
 ;; show parens
 (show-paren-mode t)
+(setq show-paren-delay 0)
 ;; no scroll bar
 (scroll-bar-mode -1)
 ;; show linenumbers
@@ -10,21 +11,22 @@
 (setq ring-bell-function 'ignore)
 ;; winner mode -- C-c left/right
 (winner-mode t)
-
 ;; utf-8
 (prefer-coding-system 'utf-8)
-
 ;; mac keybindings
 (setq mac-option-modifier nil) ;; nil because I want alt-u behaviour to enter umaluts
 (setq mac-option-key-is-meta nil)
 (setq mac-command-key-is-meta t)
 (setq mac-command-modifier 'meta)
-
 ;; all autosave and backup files in one directory
 (setq backup-directory-alist
       `((".*" . ,temporary-file-directory)))
 (setq auto-save-file-name-transforms
       `((".*" ,temporary-file-directory t)))
+;; whitespace
+(require 'whitespace)
+(setq whitespace-style '(face empty tabs lines-tail trailing))
+(global-whitespace-mode t)
 
 ;; the place for custom emacs lisp code
 (add-to-list 'load-path "~/.emacs.d/lisp")
@@ -132,6 +134,9 @@
 
  (evil-local-set-key 'normal (kbd "C-]") 'godef-jump)
 
+ ;; do not highlight "tabs" in go mode
+ (set (make-local-variable 'whitespace-style) '(face empty lines-tail trailing))
+
  ;; guru settings
  (go-guru-hl-identifier-mode))
 
@@ -155,11 +160,6 @@
 ;; Use ivy for magit completion
 (setq magit-completing-read-function 'ivy-completing-read)
 
-;; Whitespace
-(require 'whitespace)
-(setq whitespace-style '(face empty tabs lines-tail trailing))
-(global-whitespace-mode t)
-
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -167,7 +167,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (projectile-ripgrep evil-visualstar evil-surround evil-commentary wgrep yaml-mode column-marker slim-mode evil-magit magit rspec-mode go-mode geiser exec-path-from-shell evil-leader markdown-mode ivy counsel-projectile projectile evil))))
+    (lenlen-theme projectile-ripgrep evil-visualstar evil-surround evil-commentary wgrep yaml-mode column-marker slim-mode evil-magit magit rspec-mode go-mode geiser exec-path-from-shell evil-leader markdown-mode ivy counsel-projectile projectile evil))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
