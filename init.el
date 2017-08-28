@@ -89,8 +89,11 @@
 (ivy-mode 1)
 (setq ivy-use-virtual-buffers t)
 (setq ivy-count-format "(%d/%d) ")
-(setq ivy-re-builders-alist
-      '((t . ivy--regex-ignore-order)))
+;; disabled for now, since with this the candidate selection
+;; doesn't work in switch-buffer minibuffer anymore.
+;; see: https://github.com/abo-abo/swiper/issues/1159
+;; (setq ivy-re-builders-alist
+;;       '((t . ivy--regex-ignore-order)))
 (global-set-key (kbd "M-x") 'counsel-M-x)
 (define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
 
