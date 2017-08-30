@@ -9,13 +9,17 @@
 (global-linum-mode)
 ;; disable bell
 (setq ring-bell-function 'ignore)
+;; mode line colors - make the active window stand out more
+(set-face-foreground 'mode-line "white")
+(set-face-background 'mode-line "black")
 ;; display the time in mode-line
 (setq display-time-format "-- %H:%M --")
 (display-time-mode 1)
 ;; Do not use the macOS native fullscreen (with animations and everything)
 ;; when using M-x toggle-frame-fullscreen
 (setq ns-use-native-fullscreen nil)
-
+;; Always select the opened help window so it's easily closable with "q"
+(setq help-window-select t)
 ;; winner mode -- C-c left/right
 (winner-mode t)
 ;; utf-8
@@ -37,13 +41,14 @@
 ;; whitespace
 (require 'whitespace)
 (setq whitespace-style '(face empty tabs lines-tail trailing))
+(setq whitespace-global-modes '(not org-mode))
 (global-whitespace-mode t)
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(whitespace-line ((t (:foreground "black" :background "red")))))
+ '(whitespace-line ((t (:foreground "black" :background "lightyellow")))))
 
 ;; the place for custom emacs lisp code
 (add-to-list 'load-path "~/.emacs.d/lisp")
@@ -57,9 +62,6 @@
 (when (memq window-system '(mac ns x))
   (exec-path-from-shell-initialize)
   (exec-path-from-shell-copy-env "GOPATH"))
-
-(require 'switch-window)
-(global-set-key (kbd "C-x o") 'switch-window)
 
 ;; org-mode
 (require 'org)
@@ -76,19 +78,22 @@
  '((sh . t)
    (ruby . t)
    (emacs-lisp . t)
+   (scheme . t)
    ))
-
-;; projectile
-(require 'projectile)
-(projectile-mode 1)
-(setq projectile-switch-project-action #'counsel-projectile-find-file)
-(setq projectile-completion-system 'ivy)
+(require 'evil-org)
 
 ;; ivy
 (require 'ivy)
 (ivy-mode 1)
 (setq ivy-use-virtual-buffers t)
 (setq ivy-count-format "(%d/%d) ")
+(setq ivy-switch-buffer-faces-alist
+      '((emacs-lisp-mode . swiper-match-face-1)
+        (dired-mode . ivy-subdir)
+        (org-mode . org-level-4)
+        (ruby-mode .org-level-2)))
+;; Set this to a blank string instead of "^"
+(setq ivy-initial-inputs-alist '((counsel-M-x . "")))
 ;; disabled for now, since with this the candidate selection
 ;; doesn't work in switch-buffer minibuffer anymore.
 ;; see: https://github.com/abo-abo/swiper/issues/1159
@@ -97,9 +102,20 @@
 (global-set-key (kbd "M-x") 'counsel-M-x)
 (define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
 
+;; projectile
+(require 'projectile)
+(projectile-mode 1)
+(setq projectile-switch-project-action #'counsel-projectile-find-file)
+(setq projectile-completion-system 'ivy)
+;; projectile-rails
+(projectile-rails-global-mode 1)
+
 ;; counsel-projectil
 ;;(require 'counsel-projectile)
 ;;(counsel-projectile-on)
+
+(require 'switch-window)
+;; see 'switch-window binding further down
 
 ;; evil-mode
 ;; (eval-after-load "evil"
@@ -128,18 +144,33 @@
   "x" 'counsel-M-x ;; counsel-M-x comes from ivy
   "s" 'swiper ;; swiper is included in ivy
   "g" 'counsel-rg
+  "tw" 'delete-trailing-whitespace
   "cp" 'counsel-projectile-switch-project
   "fi" 'counsel-projectile-find-file
   "fd" 'counsel-projectile-find-dir
   "fb" 'counsel-projectile-switch-to-buffer
   "fg" 'counsel-projectile-rg
   "fr" 'ivy-resume
-  "ms" 'magit-status)
+  "ms" 'magit-status
+  "wo" 'switch-window)
+
+;; comint is the "repl like" mode used by inf-ruby, geiser, etc.
+(evil-define-key nil comint-mode-map
+  (kbd "C-p") 'comint-previous-input
+  (kbd "C-n") 'comint-next-input)
+;; also use ctrl-n/p for ivy
+(evil-define-key nil ivy-minibuffer-map
+  (kbd "C-p") #'ivy-previous-line
+  (kbd "C-n") #'ivy-next-line)
 
 ;; use spaces instead of tabs
 (setq-default evil-shift-width 2)
 (setq tab-width 4)
 (setq-default indent-tabs-mode nil)
+
+;; Ruby & Rspec
+;; Using binding.pry in rspec: https://emacs.stackexchange.com/questions/3537/how-do-you-run-pry-from-emacs
+(add-hook 'after-init-hook 'inf-ruby-switch-setup)
 
 ;; go -- taken from here: https://johnsogg.github.io/emacs-golang
 ;; Define function to call when go-mode loads
@@ -154,7 +185,6 @@
   (if (not (string-match "go" compile-command))   ; set compile command default
       (set (make-local-variable 'compile-command)
            "go test -v && go vet"))
-
   (local-set-key (kbd "M-p") 'projectile-compile-project) ; Invoke compiler
   (local-set-key (kbd "M-P") 'recompile)          ; Redo most recent compile cmd
   (local-set-key (kbd "M-*") 'pop-tag-mark)       ; Return from whence you came
@@ -180,7 +210,8 @@
 (add-hook 'projectile-after-switch-project-hook #'my-switch-project-hook)
 
 (evil-leader/set-key-for-mode 'go-mode "god" 'godef-jump)
-(evil-leader/set-key-for-mode 'go-mode "got" 'projectile-compile-project)
+(evil-leader/set-key-for-mode 'go-mode "goc" 'projectile-compile-project)
+(evil-leader/set-key-for-mode 'go-mode "got" 'projectile-test-project)
 
 ;; Ruby
 (evil-leader/set-key-for-mode 'ruby-mode "rt" 'rspec-verify-single)
@@ -203,12 +234,21 @@
 (setq scroll-conservatively 9999)
 (setq scroll-step 1)
 
+(require 'deft)
+(setq deft-extensions '("md"))
+(setq deft-default-extension "md")
+(setq deft-directory "~/Dropbox/notes")
+(setq deft-use-filename-as-title nil)
+(setq deft-use-filter-string-for-filename t)
+(setq deft-markdown-mode-title-level 1)
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(org-agenda-files (quote ("~/org/road_to_emacs.org" "~/org/life.org")))
  '(package-selected-packages
    (quote
-    (go-autocomplete switch-window smooth-scrolling rjsx-mode lenlen-theme projectile-ripgrep evil-visualstar evil-surround evil-commentary wgrep yaml-mode column-marker slim-mode evil-magit magit rspec-mode go-mode geiser exec-path-from-shell evil-leader markdown-mode ivy counsel-projectile projectile evil))))
+    (evil-org deft projectile-rails go-autocomplete switch-window smooth-scrolling rjsx-mode lenlen-theme projectile-ripgrep evil-visualstar evil-surround evil-commentary wgrep yaml-mode slim-mode evil-magit magit rspec-mode go-mode geiser exec-path-from-shell evil-leader markdown-mode ivy counsel-projectile projectile evil))))
 

@@ -1,1 +1,1 @@
-("~/.emacs.d/" "~/work/triebwerk/" "~/org/" "~/Dropbox/ctbig/" "~/code/projects/waiig/" "~/code/go/src/github.com/mrnugget/monkey/" "~/code/go/src/github.com/mrnugget/fzz/" "~/Dropbox/notes/" "~/code/clones/guile/")
+("~/.emacs.d/" "~/work/triebwerk/" "~/org/" "~/Dropbox/ctbig/" "~/.vim/" "~/work/triebwerk-api-doc/" "~/Dropbox/notes/" "~/code/go/src/github.com/mrnugget/monkey/" "~/code/books/sicp/" "/usr/local/go/src/runtime/" "~/code/projects/waiig/" "~/code/go/src/github.com/mrnugget/fzz/" "~/code/clones/guile/")
