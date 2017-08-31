@@ -118,12 +118,13 @@
 ;; see 'switch-window binding further down
 
 ;; evil-mode
-;; (eval-after-load "evil"
-;;  '(progn
-;;     (define-key evil-normal-state-map (kbd "C-h") 'evil-window-left)
-;;     (define-key evil-normal-state-map (kbd "C-j") 'evil-window-down)
-;;     (define-key evil-normal-state-map (kbd "C-k") 'evil-window-up)
-;;     (define-key evil-normal-state-map (kbd "C-l") 'evil-window-right)))
+(eval-after-load "evil"
+ '(progn
+    (define-key evil-normal-state-map (kbd "C-?") 'help-command)
+    (define-key evil-normal-state-map (kbd "C-h") 'evil-window-left)
+    (define-key evil-normal-state-map (kbd "C-j") 'evil-window-down)
+    (define-key evil-normal-state-map (kbd "C-k") 'evil-window-up)
+    (define-key evil-normal-state-map (kbd "C-l") 'evil-window-right)))
 (require 'evil)
 (require 'evil-leader)
 (require 'evil-commentary)
@@ -176,8 +177,7 @@
 ;; Define function to call when go-mode loads
 (require 'go-guru)
 (require 'go-autocomplete)
-(require 'auto-complete-config)
-(ac-config-default)
+
 (defun my-go-mode-hook ()
   (add-hook 'before-save-hook 'gofmt-before-save) ; gofmt before every save
   (setq gofmt-command "goimports")                ; gofmt uses invokes goimports
@@ -200,8 +200,8 @@
   (go-guru-hl-identifier-mode)
   ;; tab width of 4 spaces
   (setq tab-width 4)
-  ;; (auto-complete-mode 1)
-  )
+  ;; enable auto-complete-mode
+  (auto-complete-mode 1))
 
 (add-hook 'go-mode-hook 'my-go-mode-hook)
 
@@ -247,6 +247,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(custom-enabled-themes (quote (leuven)))
  '(org-agenda-files (quote ("~/org/road_to_emacs.org" "~/org/life.org")))
  '(package-selected-packages
    (quote
