@@ -1,3 +1,4 @@
+(setq debug-on-error t)
 ;; no toolbar
 (tool-bar-mode -1)
 ;; show parens
@@ -22,7 +23,11 @@
 (setq help-window-select t)
 ;; winner mode -- C-c left/right
 (winner-mode t)
-;; utf-8
+;; default font: hack
+(set-face-attribute 'default nil :family "Hack")
+;; utf-8 & emojis
+(set-language-environment "UTF-8")
+(set-fontset-font t 'unicode "Apple Color Emoji" nil 'prepend)
 (prefer-coding-system 'utf-8)
 ;; mac keybindings
 (setq mac-option-modifier nil) ;; nil because I want alt-u behaviour to enter umlauts
@@ -55,7 +60,10 @@
 
 ;; Packages
 (require 'package)
-(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
+(setq package-archives
+      '(("melpa" . "https://melpa.org/packages/")
+        ("gnu" . "https://elpa.gnu.org/packages/")
+        ("org" . "http://orgmode.org/elpa/")))
 (package-initialize)
 
 ;; exec-path-from-shell
@@ -63,10 +71,17 @@
   (exec-path-from-shell-initialize)
   (exec-path-from-shell-copy-env "GOPATH"))
 
+;; shells
+;; do not echo commands
+(defun my-comint-init ()
+  (setq comint-process-echoes t))
+(add-hook 'comint-mode-hook 'my-comint-init)
+
 ;; org-mode
 (require 'org)
 (define-key global-map "\C-cl" 'org-store-link)
 (define-key global-map "\C-ca" 'org-agenda)
+(setq org-adapt-indentation nil)
 (setq org-log-done t)
 (setq org-blank-before-new-entry
       '((heading . nil)
@@ -80,7 +95,6 @@
    (emacs-lisp . t)
    (scheme . t)
    ))
-(require 'evil-org)
 
 ;; ivy
 (require 'ivy)
@@ -92,6 +106,7 @@
         (dired-mode . ivy-subdir)
         (org-mode . org-level-4)
         (ruby-mode .org-level-2)))
+
 ;; Set this to a blank string instead of "^"
 (setq ivy-initial-inputs-alist '((counsel-M-x . "")))
 ;; disabled for now, since with this the candidate selection
@@ -130,12 +145,18 @@
 (require 'evil-commentary)
 (require 'evil-surround)
 (require 'evil-visualstar)
+(require 'highlight)
+(require 'evil-search-highlight-persist)
 
 (global-evil-leader-mode 1)
 (global-evil-surround-mode 1)
 (global-evil-visualstar-mode)
+(global-evil-search-highlight-persist t)
 (evil-commentary-mode 1)
 (evil-mode 1)
+
+;; allows us to "paste over" things while visually selected
+(fset 'evil-visual-update-x-selection 'ignore)
 
 (evil-leader/set-leader ",")
 (evil-leader/set-key
@@ -156,9 +177,11 @@
   "wo" 'switch-window)
 
 ;; comint is the "repl like" mode used by inf-ruby, geiser, etc.
-(evil-define-key nil comint-mode-map
-  (kbd "C-p") 'comint-previous-input
-  (kbd "C-n") 'comint-next-input)
+(dolist (mode '(normal insert))
+  (evil-define-key mode comint-mode-map
+    (kbd "C-p") 'comint-previous-input
+    (kbd "C-n") 'comint-next-input
+    (kbd "C-r") 'comint-history-isearch-backward-regexp))
 ;; also use ctrl-n/p for ivy
 (evil-define-key nil ivy-minibuffer-map
   (kbd "C-p") #'ivy-previous-line
@@ -172,6 +195,8 @@
 ;; Ruby & Rspec
 ;; Using binding.pry in rspec: https://emacs.stackexchange.com/questions/3537/how-do-you-run-pry-from-emacs
 (add-hook 'after-init-hook 'inf-ruby-switch-setup)
+;; treat _ as part of the word in ruby
+(add-hook 'ruby-mode-hook #'(lambda () (modify-syntax-entry ?_ "w")))
 
 ;; go -- taken from here: https://johnsogg.github.io/emacs-golang
 ;; Define function to call when go-mode loads
@@ -205,9 +230,9 @@
 
 (add-hook 'go-mode-hook 'my-go-mode-hook)
 
-(defun my-switch-project-hook ()
-  (go-set-project))
-(add-hook 'projectile-after-switch-project-hook #'my-switch-project-hook)
+;;(defun my-switch-project-hook ()
+;;  (go-set-project))
+;;(add-hook 'projectile-after-switch-project-hook #'my-switch-project-hook)
 
 (evil-leader/set-key-for-mode 'go-mode "god" 'godef-jump)
 (evil-leader/set-key-for-mode 'go-mode "goc" 'projectile-compile-project)
@@ -224,8 +249,6 @@
 ;; Magit
 (require 'evil-magit)
 (setq git-commit-summary-max-length 50)
-(global-set-key (kbd "C-x g") 'magit-status)
-;; Use ivy for magit completion
 (setq magit-completing-read-function 'ivy-completing-read)
 
 ;; smooth-scrolling
@@ -234,22 +257,15 @@
 (setq scroll-conservatively 9999)
 (setq scroll-step 1)
 
-(require 'deft)
-(setq deft-extensions '("md"))
-(setq deft-default-extension "md")
-(setq deft-directory "~/Dropbox/notes")
-(setq deft-use-filename-as-title nil)
-(setq deft-use-filter-string-for-filename t)
-(setq deft-markdown-mode-title-level 1)
-
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-enabled-themes (quote (leuven)))
+ '(evil-search-module (quote evil-search))
  '(org-agenda-files (quote ("~/org/road_to_emacs.org" "~/org/life.org")))
  '(package-selected-packages
    (quote
-    (evil-org deft projectile-rails go-autocomplete switch-window smooth-scrolling rjsx-mode lenlen-theme projectile-ripgrep evil-visualstar evil-surround evil-commentary wgrep yaml-mode slim-mode evil-magit magit rspec-mode go-mode geiser exec-path-from-shell evil-leader markdown-mode ivy counsel-projectile projectile evil))))
+    (evil-search-highlight-persist org erlang htmlize alchemist edit-indirect projectile-rails go-autocomplete switch-window smooth-scrolling rjsx-mode lenlen-theme projectile-ripgrep evil-visualstar evil-surround evil-commentary wgrep yaml-mode slim-mode evil-magit magit rspec-mode go-mode geiser exec-path-from-shell evil-leader markdown-mode ivy counsel-projectile projectile evil))))
 
