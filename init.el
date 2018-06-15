@@ -88,13 +88,13 @@
         (plain-list-item . nil)))
 (setq org-src-fontify-natively t)
 (org-indent-mode)
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((sh . t)
-   (ruby . t)
-   (emacs-lisp . t)
-   (scheme . t)
-   ))
+; (org-babel-do-load-languages
+;  'org-babel-load-languages
+;  '((sh . t)
+;    (ruby . t)
+;    (emacs-lisp . t)
+;    (scheme . t)
+;    ))
 
 ;; ivy
 (require 'ivy)
@@ -262,10 +262,14 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(custom-enabled-themes (quote (leuven)))
+ '(ansi-color-faces-vector
+   [default default default italic underline success warning error])
+ '(ansi-color-names-vector
+   ["black" "red3" "ForestGreen" "yellow3" "blue" "magenta3" "DeepSkyBlue" "gray50"])
+ '(custom-enabled-themes nil)
  '(evil-search-module (quote evil-search))
  '(org-agenda-files (quote ("~/org/road_to_emacs.org" "~/org/life.org")))
  '(package-selected-packages
    (quote
-    (evil-search-highlight-persist org erlang htmlize alchemist edit-indirect projectile-rails go-autocomplete switch-window smooth-scrolling rjsx-mode lenlen-theme projectile-ripgrep evil-visualstar evil-surround evil-commentary wgrep yaml-mode slim-mode evil-magit magit rspec-mode go-mode geiser exec-path-from-shell evil-leader markdown-mode ivy counsel-projectile projectile evil))))
+    (color-theme-sanityinc-tomorrow evil-search-highlight-persist org erlang htmlize alchemist edit-indirect projectile-rails go-autocomplete switch-window smooth-scrolling rjsx-mode lenlen-theme projectile-ripgrep evil-visualstar evil-surround evil-commentary wgrep yaml-mode slim-mode evil-magit magit rspec-mode go-mode geiser exec-path-from-shell evil-leader markdown-mode ivy counsel-projectile projectile evil))))
 
