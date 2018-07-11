@@ -85,22 +85,33 @@
 
 ;; org-mode
 (require 'org)
-(define-key global-map "\C-cl" 'org-store-link)
-(define-key global-map "\C-ca" 'org-agenda)
-(setq org-adapt-indentation nil)
-(setq org-log-done t)
-(setq org-blank-before-new-entry
-      '((heading . nil)
-        (plain-list-item . nil)))
-(setq org-src-fontify-natively t)
-(org-indent-mode)
-; (org-babel-do-load-languages
-;  'org-babel-load-languages
-;  '((sh . t)
-;    (ruby . t)
-;    (emacs-lisp . t)
-;    (scheme . t)
-;    ))
+;; (define-key global-map "\C-cl" 'org-store-link)
+;; (define-key global-map "\C-ca" 'org-agenda)
+;; (setq org-adapt-indentation t)
+;; (setq org-log-done t)
+;; (setq org-blank-before-new-entry
+;;       '((heading . nil)
+;;         (plain-list-item . nil)))
+;; (setq org-src-fontify-natively t)
+(setq org-startup-indented t)
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((ruby . t)
+   (emacs-lisp . t)
+   (scheme . t)))
+(setq org-capture-templates
+ '(("in" "ioki Note" entry (file+headline "~/Dropbox/org/ioki.org" "ioki")
+        "* %?")
+   ("ij" "ioki Journal entry" entry (file+olp+datetree "~/Dropbox/org/ioki-journal.org" "ioki Journal")
+        "* %?\nEntered on %U")))
+
+(require 'evil-org)
+(add-hook 'org-mode-hook 'evil-org-mode)
+(add-hook 'evil-org-mode-hook
+          (lambda ()
+            (evil-org-set-key-theme)))
+(require 'evil-org-agenda)
+(evil-org-agenda-set-keys)
 
 ;; ivy
 (require 'ivy)
@@ -163,6 +174,7 @@
 
 ;; this should make ivy-occur buffers editable again (https://github.com/syl20bnr/spacemacs/issues/10290)
 (evil-set-initial-state 'ivy-occur-grep-mode 'normal)
+(evil-set-initial-state 'projectile-rails-server 'normal)
 
 ;; allows us to "paste over" things while visually selected
 (fset 'evil-visual-update-x-selection 'ignore)
@@ -181,6 +193,7 @@
   "fd" 'counsel-projectile-find-dir
   "fb" 'counsel-projectile-switch-to-buffer
   "fg" 'counsel-projectile-rg
+  "fs" 'projectile-run-shell
   "fr" 'ivy-resume
   "ms" 'magit-status
   "wo" 'switch-window)
@@ -210,7 +223,7 @@
 ;; go -- taken from here: https://johnsogg.github.io/emacs-golang
 ;; Define function to call when go-mode loads
 (require 'go-guru)
-(require 'go-autocomplete)
+;;(require 'go-autocomplete)
 
 (defun my-go-mode-hook ()
   (add-hook 'before-save-hook 'gofmt-before-save) ; gofmt before every save
@@ -234,8 +247,9 @@
   (go-guru-hl-identifier-mode)
   ;; tab width of 4 spaces
   (setq tab-width 4)
+  )
   ;; enable auto-complete-mode
-  (auto-complete-mode 1))
+  ;;(auto-complete-mode 1))
 
 (add-hook 'go-mode-hook 'my-go-mode-hook)
 
@@ -273,7 +287,6 @@
 
 (defun pipe-to-jq()
   (interactive)
-  (message region-beginning)
   (shell-command-on-region
    (region-beginning) (region-end)
    "cat | jq ." nil t))
@@ -289,48 +302,11 @@
    [default default default italic underline success warning error])
  '(ansi-color-names-vector
    ["black" "red3" "ForestGreen" "yellow3" "blue" "magenta3" "DeepSkyBlue" "gray50"])
- '(custom-enabled-themes nil)
+ '(custom-enabled-themes (quote (leuven)))
  '(evil-search-module (quote evil-search))
  '(ibuffer-saved-filter-groups nil)
- '(ibuffer-saved-filters
-   (quote
-    (("hel"
-      (projectile-files . "/Users/mrnugget/work/triebwerk/"))
-     ("programming"
-      (or
-       (derived-mode . prog-mode)
-       (mode . ess-mode)
-       (mode . compilation-mode)))
-     ("text document"
-      (and
-       (derived-mode . text-mode)
-       (not
-        (starred-name))))
-     ("TeX"
-      (or
-       (derived-mode . tex-mode)
-       (mode . latex-mode)
-       (mode . context-mode)
-       (mode . ams-tex-mode)
-       (mode . bibtex-mode)))
-     ("web"
-      (or
-       (derived-mode . sgml-mode)
-       (derived-mode . css-mode)
-       (mode . javascript-mode)
-       (mode . js2-mode)
-       (mode . scss-mode)
-       (derived-mode . haml-mode)
-       (mode . sass-mode)))
-     ("gnus"
-      (or
-       (mode . message-mode)
-       (mode . mail-mode)
-       (mode . gnus-group-mode)
-       (mode . gnus-summary-mode)
-       (mode . gnus-article-mode))))))
  '(org-agenda-files (quote ("~/org/road_to_emacs.org" "~/org/life.org")))
  '(package-selected-packages
    (quote
-    (evil-matchit color-theme-sanityinc-tomorrow evil-search-highlight-persist org erlang htmlize alchemist edit-indirect projectile-rails go-autocomplete switch-window smooth-scrolling rjsx-mode lenlen-theme projectile-ripgrep evil-visualstar evil-surround evil-commentary wgrep yaml-mode slim-mode evil-magit magit rspec-mode go-mode geiser exec-path-from-shell evil-leader markdown-mode ivy counsel-projectile projectile evil))))
+    (evil-org evil-matchit color-theme-sanityinc-tomorrow evil-search-highlight-persist org erlang htmlize alchemist edit-indirect projectile-rails go-autocomplete switch-window smooth-scrolling rjsx-mode lenlen-theme projectile-ripgrep evil-visualstar evil-surround evil-commentary wgrep yaml-mode slim-mode evil-magit magit rspec-mode go-mode geiser exec-path-from-shell evil-leader markdown-mode ivy counsel-projectile projectile evil))))
 
