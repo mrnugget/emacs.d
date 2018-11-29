@@ -77,6 +77,7 @@
   (exec-path-from-shell-initialize)
   (exec-path-from-shell-copy-env "GOPATH"))
 
+
 ;; shells
 ;; do not echo commands
 (defun my-comint-init ()
@@ -107,9 +108,14 @@
 
 (require 'evil-org)
 (add-hook 'org-mode-hook 'evil-org-mode)
+
+(add-hook 'org-mode-hook
+          (lambda ()
+            (global-visual-line-mode 1)))
 (add-hook 'evil-org-mode-hook
           (lambda ()
             (evil-org-set-key-theme)))
+
 (require 'evil-org-agenda)
 (evil-org-agenda-set-keys)
 
@@ -163,12 +169,13 @@
 (require 'evil-surround)
 (require 'evil-visualstar)
 (require 'highlight)
-(require 'evil-search-highlight-persist)
+;; (require 'evil-search-highlight-persist)
+; (global-evil-search-highlight-persist t)
+(setq evil-ex-search-persistent-highlight t)
 
 (global-evil-leader-mode 1)
 (global-evil-surround-mode 1)
 (global-evil-visualstar-mode)
-(global-evil-search-highlight-persist t)
 (evil-commentary-mode 1)
 (evil-mode 1)
 
@@ -187,6 +194,7 @@
   "x" 'counsel-M-x ;; counsel-M-x comes from ivy
   "s" 'swiper ;; swiper is included in ivy
   "g" 'counsel-rg
+  "h" 'evil-ex-nohighlight
   "tw" 'delete-trailing-whitespace
   "cp" 'counsel-projectile-switch-project
   "fi" 'counsel-projectile-find-file
@@ -213,6 +221,58 @@
 (setq-default evil-shift-width 2)
 (setq tab-width 4)
 (setq-default indent-tabs-mode nil)
+
+;; geiser
+(setq geiser-debug-jump-to-debug-p nil)
+
+;; Lots of things taken from here https://github.com/emacs-evil/evil-collection/blob/dfa412db04b3714a14a1879679daddefb873b89b/evil-collection-geiser.el
+;; With modifications to keybindings
+(defun evil-collection-geiser-last-sexp (command &rest args)
+  "In normal-state or motion-state, last sexp ends at point."
+  (if (and (not evil-move-beyond-eol)
+           (or (evil-normal-state-p) (evil-motion-state-p)))
+      (save-excursion
+        (unless (or (eobp) (eolp)) (forward-char))
+        (apply command args))))
+
+(advice-add 'geiser-eval-last-sexp :around 'evil-collection-geiser-last-sexp)
+(advice-add 'geiser-eval-last-sexp-and-print :around 'evil-collection-geiser-last-sexp)
+
+(evil-set-initial-state 'geiser-debug-mode 'normal)
+(evil-set-initial-state 'geiser-doc-mode 'normal)
+
+(evil-define-key 'normal 'geiser-debug-mode-map
+  "q" 'quit-window)
+
+(evil-define-key 'normal 'geiser-doc-mode-map
+  "gd" 'geiser-edit-symbol-at-point
+  (kbd "C-t") 'geiser-pop-symbol-stack
+  "gr" 'geiser-doc-refresh
+  "q" 'View-quit
+  "gz" 'geiser-doc-switch-to-repl
+  "gj" 'forward-button
+  "gk" 'backward-button
+  "]" 'geiser-doc-next-section
+  "[" 'geiser-doc-previous-section)
+
+(evil-define-key 'insert 'geiser-repl-mode-map
+  (kbd "S-<return>") 'geiser-repl--newline-and-indent)
+
+(evil-define-key 'normal 'geiser-repl-mode-map
+  "gd" 'geiser-edit-symbol-at-point
+  (kbd "C-t") 'geiser-pop-symbol-stack
+  "gj" 'geiser-repl-next-prompt
+  "gk" 'geiser-repl-previous-prompt
+  "]" 'geiser-repl-next-prompt
+  "[" 'geiser-repl-previous-prompt
+  "K" 'geiser-doc-symbol-at-point)
+
+(evil-define-key 'normal 'geiser-mode-map
+  "gd" 'geiser-edit-symbol-at-point
+  (kbd "C-t") 'geiser-pop-symbol-stack
+  "gZ" 'geiser-mode-switch-to-repl-and-enter
+  "gz" 'geiser-mode-switch-to-repl
+  "K" 'geiser-doc-symbol-at-point)
 
 ;; Ruby & Rspec
 ;; Using binding.pry in rspec: https://emacs.stackexchange.com/questions/3537/how-do-you-run-pry-from-emacs
@@ -293,6 +353,29 @@
 
 (evil-leader/set-key "jq" 'pipe-to-jq)
 
+;; small compilation window
+
+(defun my-compile ()
+  "Run compile and resize the compile window"
+  (interactive)
+  (progn
+    (call-interactively 'compile)
+    (setq cur (selected-window))
+    (setq w (get-buffer-window "*compilation*"))
+    (select-window w)
+    (setq h (window-height w))
+    (shrink-window (- h 10))
+    (select-window cur)))
+
+(defun my-compilation-hook ()
+  "Make sure that the compile window is splitting vertically"
+  (progn
+    (if (not (get-buffer-window "*compilation*"))
+        (progn (split-window-vertically)))))
+
+(add-hook 'compilation-mode-hook 'my-compilation-hook)
+(global-set-key [f9] 'my-compile)
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -305,8 +388,9 @@
  '(custom-enabled-themes (quote (leuven)))
  '(evil-search-module (quote evil-search))
  '(ibuffer-saved-filter-groups nil)
- '(org-agenda-files (quote ("~/org/road_to_emacs.org" "~/org/life.org")))
+ '(org-agenda-files (quote ("~/Dropbox/org/ioki-journal.org")))
  '(package-selected-packages
    (quote
-    (evil-org evil-matchit color-theme-sanityinc-tomorrow evil-search-highlight-persist org erlang htmlize alchemist edit-indirect projectile-rails go-autocomplete switch-window smooth-scrolling rjsx-mode lenlen-theme projectile-ripgrep evil-visualstar evil-surround evil-commentary wgrep yaml-mode slim-mode evil-magit magit rspec-mode go-mode geiser exec-path-from-shell evil-leader markdown-mode ivy counsel-projectile projectile evil))))
+    (evil-collection evil-paredit ox-gfm evil-org evil-matchit color-theme-sanityinc-tomorrow evil-search-highlight-persist org erlang htmlize alchemist edit-indirect projectile-rails go-autocomplete switch-window smooth-scrolling rjsx-mode lenlen-theme projectile-ripgrep evil-visualstar evil-surround evil-commentary wgrep yaml-mode slim-mode evil-magit magit rspec-mode go-mode geiser exec-path-from-shell evil-leader markdown-mode ivy counsel-projectile projectile evil))))
 
+(put 'narrow-to-region 'disabled nil)
