@@ -58,19 +58,63 @@
 ;; the place for custom emacs lisp code
 (add-to-list 'load-path "~/.emacs.d/lisp")
 
-;; Packages
-
 ;; winner mode -- C-c left/right
 (winner-mode t)
 (global-set-key (kbd "C-c C-u") 'winner-undo)
 (global-set-key (kbd "C-c C-r") 'winner-redo)
+
+;; Packages
+
+(setq my-packages '(evil
+                     evil-collection
+                     evil-paredit
+                     evil-visualstar
+                     evil-surround
+                     evil-commentary
+                     evil-org
+                     evil-matchit
+                     evil-search-highlight-persist
+                     evil-magit
+                     evil-leader
+                     magit
+                     ivy
+                     projectile
+                     counsel-projectile
+                     projectile-rails
+                     projectile-ripgrep
+                     exec-path-from-shell
+                     org
+                     ox-gfm
+                     erlang
+                     htmlize
+                     alchemist
+                     edit-indirect
+                     go-autocomplete
+                     switch-window
+                     smooth-scrolling
+                     wgrep
+                     yaml-mode
+                     slim-mode
+                     rjsx-mode
+                     rspec-mode
+                     go-mode
+                     geiser
+                     markdown-mode))
 
 (require 'package)
 (setq package-archives
       '(("melpa" . "https://melpa.org/packages/")
         ("gnu" . "https://elpa.gnu.org/packages/")
         ("org" . "http://orgmode.org/elpa/")))
-(package-initialize)
+
+; fetch the list of packages available 
+(unless package-archive-contents
+  (package-refresh-contents))
+
+; install the missing packages
+(dolist (package my-packages)
+  (unless (package-installed-p package)
+    (package-install package)))
 
 ;; exec-path-from-shell
 (when (memq window-system '(mac ns x))
@@ -385,12 +429,11 @@
    [default default default italic underline success warning error])
  '(ansi-color-names-vector
    ["black" "red3" "ForestGreen" "yellow3" "blue" "magenta3" "DeepSkyBlue" "gray50"])
- '(custom-enabled-themes (quote (leuven)))
- '(evil-search-module (quote evil-search))
+ '(custom-enabled-themes '(leuven))
+ '(evil-search-module 'evil-search)
  '(ibuffer-saved-filter-groups nil)
- '(org-agenda-files (quote ("~/Dropbox/org/ioki-journal.org")))
+ '(org-agenda-files '("~/Dropbox/org/ioki-journal.org"))
  '(package-selected-packages
-   (quote
-    (evil-collection evil-paredit ox-gfm evil-org evil-matchit color-theme-sanityinc-tomorrow evil-search-highlight-persist org erlang htmlize alchemist edit-indirect projectile-rails go-autocomplete switch-window smooth-scrolling rjsx-mode lenlen-theme projectile-ripgrep evil-visualstar evil-surround evil-commentary wgrep yaml-mode slim-mode evil-magit magit rspec-mode go-mode geiser exec-path-from-shell evil-leader markdown-mode ivy counsel-projectile projectile evil))))
+   '(evil-collection evil-paredit ox-gfm evil-org evil-matchit color-theme-sanityinc-tomorrow evil-search-highlight-persist org erlang htmlize alchemist edit-indirect projectile-rails go-autocomplete switch-window smooth-scrolling rjsx-mode lenlen-theme projectile-ripgrep evil-visualstar evil-surround evil-commentary wgrep yaml-mode slim-mode evil-magit magit rspec-mode go-mode geiser exec-path-from-shell evil-leader markdown-mode ivy counsel-projectile projectile evil)))
 
 (put 'narrow-to-region 'disabled nil)
