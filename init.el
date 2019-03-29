@@ -1,3 +1,23 @@
+;; Initial bootstrapping for `use-package`
+
+(require 'package)
+(setq package-enable-at-startup nil)
+(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
+(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
+(add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
+
+(unless package--initialized
+  (package-initialize t))
+
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
+(eval-when-compile
+  (require 'use-package))
+
+;; General setting
+
 ;; no toolbar
 (tool-bar-mode -1)
 ;; show parens
@@ -55,6 +75,11 @@
  ;; If there is more than one, they won't work right.
  '(whitespace-line ((t (:foreground "black" :background "lightyellow")))))
 
+;; use spaces instead of tabs
+
+(setq tab-width 4)
+(setq-default indent-tabs-mode nil)
+
 ;; the place for custom emacs lisp code
 (add-to-list 'load-path "~/.emacs.d/lisp")
 
@@ -63,329 +88,403 @@
 (global-set-key (kbd "C-c C-u") 'winner-undo)
 (global-set-key (kbd "C-c C-r") 'winner-redo)
 
-;; Packages
-
-(setq my-packages '(evil
-                     evil-collection
-                     evil-paredit
-                     evil-visualstar
-                     evil-surround
-                     evil-commentary
-                     evil-org
-                     evil-matchit
-                     evil-search-highlight-persist
-                     evil-magit
-                     evil-leader
-                     magit
-                     ivy
-                     projectile
-                     counsel-projectile
-                     projectile-rails
-                     projectile-ripgrep
-                     exec-path-from-shell
-                     org
-                     ox-gfm
-                     erlang
-                     htmlize
-                     alchemist
-                     edit-indirect
-                     go-autocomplete
-                     switch-window
-                     smooth-scrolling
-                     wgrep
-                     yaml-mode
-                     slim-mode
-                     rjsx-mode
-                     rspec-mode
-                     go-mode
-                     geiser
-                     markdown-mode))
-
-(require 'package)
-(setq package-archives
-      '(("melpa" . "https://melpa.org/packages/")
-        ("gnu" . "https://elpa.gnu.org/packages/")
-        ("org" . "http://orgmode.org/elpa/")))
-
-; fetch the list of packages available 
-(unless package-archive-contents
-  (package-refresh-contents))
-
-; install the missing packages
-(dolist (package my-packages)
-  (unless (package-installed-p package)
-    (package-install package)))
-
-;; exec-path-from-shell
-(when (memq window-system '(mac ns x))
-  (exec-path-from-shell-initialize)
-  (exec-path-from-shell-copy-env "GOPATH"))
-
-
-;; shells
+;; comint
 ;; do not echo commands
 (defun my-comint-init ()
   (setq comint-process-echoes t))
 (add-hook 'comint-mode-hook 'my-comint-init)
 
+
+;; Packages
+;; (setq my-packages '(evil
+;;                      evil-collection
+;;                      evil-paredit
+;;                      evil-visualstar
+;;                      evil-surround
+;;                      evil-commentary
+;;                      evil-org
+;;                      evil-matchit
+;;                      evil-search-highlight-persist
+;;                      evil-magit
+;;                      evil-leader
+;;                      magit
+;;                      ivy
+;;                      projectile
+;;                      counsel-projectile
+;;                      projectile-ripgrep
+;;                      exec-path-from-shell
+;;                      org
+;;                      ox-gfm
+;;                      erlang
+;;                      htmlize
+;;                      alchemist
+;;                      edit-indirect
+;;                      go-autocomplete
+;;                      wgrep
+;;                      yaml-mode
+;;                      slim-mode
+;;                      rjsx-mode
+;;                      rspec-mode
+;;                      go-mode
+;;                      rust-mode
+;;                      cargo
+;;                      geiser
+;;                      markdown-mode
+;;                      flycheck
+;;                      flycheck-rust))
+
+;; (require 'package)
+;; (setq package-archives
+;;       '(("melpa" . "https://melpa.org/packages/")
+;;         ("gnu" . "https://elpa.gnu.org/packages/")
+;;         ("org" . "http://orgmode.org/elpa/")))
+
+                                        ; fetch the list of packages available
+;; (package-refresh-contents)
+
+                                        ; install the missing packages
+;; (dolist (package my-packages)
+;;   (unless (package-installed-p package)
+;;     (package-install package)))
+
+;; exec-path-from-shell
+(use-package exec-path-from-shell
+  :ensure t
+  :config
+  (when (memq window-system '(mac ns x))
+    (exec-path-from-shell-initialize)
+    (exec-path-from-shell-copy-env "GOPATH")))
+
+
 ;; org-mode
-(require 'org)
-;; (define-key global-map "\C-cl" 'org-store-link)
-;; (define-key global-map "\C-ca" 'org-agenda)
-;; (setq org-adapt-indentation t)
-;; (setq org-log-done t)
-;; (setq org-blank-before-new-entry
-;;       '((heading . nil)
-;;         (plain-list-item . nil)))
-;; (setq org-src-fontify-natively t)
-(setq org-startup-indented t)
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((ruby . t)
-   (emacs-lisp . t)
-   (scheme . t)))
-(setq org-capture-templates
- '(("in" "ioki Note" entry (file+headline "~/Dropbox/org/ioki.org" "ioki")
-        "* %?")
-   ("ij" "ioki Journal entry" entry (file+olp+datetree "~/Dropbox/org/ioki-journal.org" "ioki Journal")
-        "* %?\nEntered on %U")))
+(use-package org
+  :ensure t
+  :config
+  (setq org-startup-indented t)
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((ruby . t)
+     (emacs-lisp . t)
+     (scheme . t)))
+  (setq org-capture-templates
+        '(("in" "Mesosphere Note" entry (file+headline "~/Dropbox/org/mesosphere.org" "Mesosphere")
+           "* %?")
+          )))
 
-(require 'evil-org)
-(add-hook 'org-mode-hook 'evil-org-mode)
+(use-package ox-gfm
+  :ensure t
+  :after org)
 
-(add-hook 'org-mode-hook
-          (lambda ()
-            (global-visual-line-mode 1)))
-(add-hook 'evil-org-mode-hook
-          (lambda ()
-            (evil-org-set-key-theme)))
+(use-package ox-jira
+  :ensure t
+  :after org)
 
-(require 'evil-org-agenda)
-(evil-org-agenda-set-keys)
+(use-package ace-window
+  :ensure t
+  :config
+  (global-set-key (kbd "M-o") 'ace-window))
 
 ;; ivy
-(require 'ivy)
-(ivy-mode 1)
-(setq ivy-use-virtual-buffers t)
-(setq ivy-count-format "(%d/%d) ")
-(setq ivy-switch-buffer-faces-alist
-      '((emacs-lisp-mode . swiper-match-face-1)
-        (dired-mode . ivy-subdir)
-        (org-mode . org-level-4)
-        (ruby-mode .org-level-2)))
+(use-package ivy
+  :ensure t
+  :config
+  (ivy-mode 1)
+  (setq ivy-use-virtual-buffers t)
+  (setq ivy-count-format "(%d/%d) ")
+  (setq ivy-switch-buffer-faces-alist
+        '((emacs-lisp-mode . swiper-match-face-1)
+          (dired-mode . ivy-subdir)
+          (org-mode . org-level-4)
+          (ruby-mode .org-level-2)))
+  ;; Set this to a blank string instead of "^"
+  (setq ivy-initial-inputs-alist '((counsel-M-x . "")))
+  ;; disabled for now, since with this the candidate selection
+  ;; doesn't work in switch-buffer minibuffer anymore.
+  ;; see: https://github.com/abo-abo/swiper/issues/1159
+  ;; (setq ivy-re-builders-alist
+  ;;       '((t . ivy--regex-ignore-order)))
+  (global-set-key (kbd "M-x") 'counsel-M-x)
+  (define-key read-expression-map (kbd "C-r") 'counsel-expression-history))
 
-;; Set this to a blank string instead of "^"
-(setq ivy-initial-inputs-alist '((counsel-M-x . "")))
-;; disabled for now, since with this the candidate selection
-;; doesn't work in switch-buffer minibuffer anymore.
-;; see: https://github.com/abo-abo/swiper/issues/1159
-;; (setq ivy-re-builders-alist
-;;       '((t . ivy--regex-ignore-order)))
-(global-set-key (kbd "M-x") 'counsel-M-x)
-(define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
 
 ;; projectile
-(setq projectile-switch-project-action 'projectile-dired)
-(setq projectile-completion-system 'ivy)
-(require 'projectile)
-(projectile-mode 1)
-;; projectile-rails
-(projectile-rails-global-mode 1)
+(use-package projectile
+  :ensure t
+  :init
+  (setq projectile-switch-project-action 'projectile-dired)
+  (setq projectile-completion-system 'ivy)
+  :config
+  (projectile-mode 1))
 
-;; counsel-projectil
-;;(require 'counsel-projectile)
-;;(counsel-projectile-on)
+(use-package counsel-projectile
+  :ensure t
+  :after projectile ivy)
 
-(require 'switch-window)
-;; see 'switch-window binding further down
+(use-package projectile-ripgrep
+  :ensure t)
+
+;; switch-window
+(use-package switch-window
+  :ensure t)
+
+;; highlight
+(use-package highlight
+  :ensure t)
 
 ;; evil-mode
-(eval-after-load "evil"
- '(progn
-    (define-key evil-normal-state-map (kbd "C-?") 'help-command)
-    (define-key evil-normal-state-map (kbd "C-h") 'evil-window-left)
-    (define-key evil-normal-state-map (kbd "C-j") 'evil-window-down)
-    (define-key evil-normal-state-map (kbd "C-k") 'evil-window-up)
-    (define-key evil-normal-state-map (kbd "C-l") 'evil-window-right)))
-(require 'evil)
-(require 'evil-leader)
-(require 'evil-commentary)
-(require 'evil-surround)
-(require 'evil-visualstar)
-(require 'highlight)
-;; (require 'evil-search-highlight-persist)
-; (global-evil-search-highlight-persist t)
-(setq evil-ex-search-persistent-highlight t)
+(use-package evil
+  :ensure t
+  :after ivy
+  :init
+  (setq evil-want-C-u-scroll t)
+  :config
+  (evil-mode 1)
+  (define-key evil-normal-state-map (kbd "C-?") 'help-command)
+  (define-key evil-normal-state-map (kbd "C-h") 'evil-window-left)
+  (define-key evil-normal-state-map (kbd "C-j") 'evil-window-down)
+  (define-key evil-normal-state-map (kbd "C-k") 'evil-window-up)
+  (define-key evil-normal-state-map (kbd "C-l") 'evil-window-right)
+  ;; whitespace settings
+  (setq-default evil-shift-width 2)
+  ;; (require 'evil-search-highlight-persist)
+                                        ; (global-evil-search-highlight-persist t)
+  (setq evil-ex-search-persistent-highlight t)
+  ;; this should make ivy-occur buffers editable again (https://github.com/syl20bnr/spacemacs/issues/10290)
+  (evil-set-initial-state 'ivy-occur-grep-mode 'normal)
 
-(global-evil-leader-mode 1)
-(global-evil-surround-mode 1)
-(global-evil-visualstar-mode)
-(evil-commentary-mode 1)
-(evil-mode 1)
+  ;; allows us to "paste over" things while visually selected
+  (fset 'evil-visual-update-x-selection 'ignore)
+  ;; comint is the "repl like" mode used by inf-ruby, geiser, etc.
+  (dolist (mode '(normal insert))
+    (evil-define-key mode comint-mode-map
+      (kbd "C-p") 'comint-previous-input
+      (kbd "C-n") 'comint-next-input
+      (kbd "C-r") 'comint-history-isearch-backward-regexp))
+  ;; also use ctrl-n/p for ivy
+  (evil-define-key nil ivy-minibuffer-map
+    (kbd "C-p") #'ivy-previous-line
+    (kbd "C-n") #'ivy-next-line)
 
-;; this should make ivy-occur buffers editable again (https://github.com/syl20bnr/spacemacs/issues/10290)
-(evil-set-initial-state 'ivy-occur-grep-mode 'normal)
-(evil-set-initial-state 'projectile-rails-server 'normal)
+  (dolist (map '(help-mode-map compilation-mode-map))
+    (evil-define-key nil map
+      (kbd "C-h") 'evil-window-left
+      (kbd "C-j") 'evil-window-down
+      (kbd "C-k") 'evil-window-up
+      (kbd "C-l") 'evil-window-right)))
 
-;; allows us to "paste over" things while visually selected
-(fset 'evil-visual-update-x-selection 'ignore)
+(use-package evil-leader
+  :ensure t
+  :after evil
+  :config
+  (global-evil-leader-mode 1)
+  (evil-leader/set-leader ",")
+  (evil-leader/set-key
+    "e" 'find-file
+    "b" 'switch-to-buffer
+    "k" 'kill-buffer
+    "x" 'counsel-M-x ;; counsel-M-x comes from ivy
+    "s" 'swiper ;; swiper is included in ivy
+    "g" 'counsel-rg
+    "h" 'evil-ex-nohighlight
+    "tw" 'delete-trailing-whitespace
+    "cp" 'counsel-projectile-switch-project
+    "fi" 'counsel-projectile-find-file
+    "fd" 'counsel-projectile-find-dir
+    "fb" 'counsel-projectile-switch-to-buffer
+    "fg" 'counsel-projectile-rg
+    "fs" 'projectile-run-shell
+    "fr" 'ivy-resume
+    "ms" 'magit-status
+    "wo" 'switch-window))
 
-(evil-leader/set-leader ",")
-(evil-leader/set-key
-  "e" 'find-file
-  "b" 'switch-to-buffer
-  "k" 'kill-buffer
-  "x" 'counsel-M-x ;; counsel-M-x comes from ivy
-  "s" 'swiper ;; swiper is included in ivy
-  "g" 'counsel-rg
-  "h" 'evil-ex-nohighlight
-  "tw" 'delete-trailing-whitespace
-  "cp" 'counsel-projectile-switch-project
-  "fi" 'counsel-projectile-find-file
-  "fd" 'counsel-projectile-find-dir
-  "fb" 'counsel-projectile-switch-to-buffer
-  "fg" 'counsel-projectile-rg
-  "fs" 'projectile-run-shell
-  "fr" 'ivy-resume
-  "ms" 'magit-status
-  "wo" 'switch-window)
+(use-package evil-commentary
+  :ensure t
+  :after evil
+  :config
+  (evil-commentary-mode 1))
+(use-package evil-surround
+  :ensure t
+  :after evil
+  :config
+  (global-evil-surround-mode 1))
+(use-package evil-visualstar
+  :ensure t
+  :after evil
+  :config
+  (global-evil-visualstar-mode))
 
-;; comint is the "repl like" mode used by inf-ruby, geiser, etc.
-(dolist (mode '(normal insert))
-  (evil-define-key mode comint-mode-map
-    (kbd "C-p") 'comint-previous-input
-    (kbd "C-n") 'comint-next-input
-    (kbd "C-r") 'comint-history-isearch-backward-regexp))
-;; also use ctrl-n/p for ivy
-(evil-define-key nil ivy-minibuffer-map
-  (kbd "C-p") #'ivy-previous-line
-  (kbd "C-n") #'ivy-next-line)
+(use-package evil-matchit
+  :ensure t)
 
-;; use spaces instead of tabs
-(setq-default evil-shift-width 2)
-(setq tab-width 4)
-(setq-default indent-tabs-mode nil)
+(use-package evil-search-highlight-persist
+  :ensure t)
+
+;; evil-org
+(use-package evil-org
+  :ensure t
+  :after evil org
+  :config
+  (add-hook 'org-mode-hook 'evil-org-mode)
+  (add-hook 'org-mode-hook (lambda () (global-visual-line-mode 1)))
+  (add-hook 'evil-org-mode-hook (lambda () (evil-org-set-key-theme))))
 
 ;; geiser
-(setq geiser-debug-jump-to-debug-p nil)
-
-;; Lots of things taken from here https://github.com/emacs-evil/evil-collection/blob/dfa412db04b3714a14a1879679daddefb873b89b/evil-collection-geiser.el
-;; With modifications to keybindings
-(defun evil-collection-geiser-last-sexp (command &rest args)
-  "In normal-state or motion-state, last sexp ends at point."
-  (if (and (not evil-move-beyond-eol)
-           (or (evil-normal-state-p) (evil-motion-state-p)))
-      (save-excursion
-        (unless (or (eobp) (eolp)) (forward-char))
-        (apply command args))))
-
-(advice-add 'geiser-eval-last-sexp :around 'evil-collection-geiser-last-sexp)
-(advice-add 'geiser-eval-last-sexp-and-print :around 'evil-collection-geiser-last-sexp)
-
-(evil-set-initial-state 'geiser-debug-mode 'normal)
-(evil-set-initial-state 'geiser-doc-mode 'normal)
-
-(evil-define-key 'normal 'geiser-debug-mode-map
-  "q" 'quit-window)
-
-(evil-define-key 'normal 'geiser-doc-mode-map
-  "gd" 'geiser-edit-symbol-at-point
-  (kbd "C-t") 'geiser-pop-symbol-stack
-  "gr" 'geiser-doc-refresh
-  "q" 'View-quit
-  "gz" 'geiser-doc-switch-to-repl
-  "gj" 'forward-button
-  "gk" 'backward-button
-  "]" 'geiser-doc-next-section
-  "[" 'geiser-doc-previous-section)
-
-(evil-define-key 'insert 'geiser-repl-mode-map
-  (kbd "S-<return>") 'geiser-repl--newline-and-indent)
-
-(evil-define-key 'normal 'geiser-repl-mode-map
-  "gd" 'geiser-edit-symbol-at-point
-  (kbd "C-t") 'geiser-pop-symbol-stack
-  "gj" 'geiser-repl-next-prompt
-  "gk" 'geiser-repl-previous-prompt
-  "]" 'geiser-repl-next-prompt
-  "[" 'geiser-repl-previous-prompt
-  "K" 'geiser-doc-symbol-at-point)
-
-(evil-define-key 'normal 'geiser-mode-map
-  "gd" 'geiser-edit-symbol-at-point
-  (kbd "C-t") 'geiser-pop-symbol-stack
-  "gZ" 'geiser-mode-switch-to-repl-and-enter
-  "gz" 'geiser-mode-switch-to-repl
-  "K" 'geiser-doc-symbol-at-point)
+(use-package geiser
+  :ensure t
+  :after evil
+  :config
+  (setq geiser-debug-jump-to-debug-p nil))
 
 ;; Ruby & Rspec
 ;; Using binding.pry in rspec: https://emacs.stackexchange.com/questions/3537/how-do-you-run-pry-from-emacs
-(add-hook 'after-init-hook 'inf-ruby-switch-setup)
-;; treat _ as part of the word in ruby
-;; (add-hook 'ruby-mode-hook #'(lambda () (modify-syntax-entry ?_ "w")))
+(use-package inf-ruby
+  :ensure t
+  :config
+  (add-hook 'after-init-hook 'inf-ruby-switch-setup))
 
-;; go -- taken from here: https://johnsogg.github.io/emacs-golang
-;; Define function to call when go-mode loads
-(require 'go-guru)
-;;(require 'go-autocomplete)
+(use-package go-mode
+  :ensure t
+  :after evil projectile evil-leader
+  :config
+  ;; go -- taken from here: https://johnsogg.github.io/emacs-golang
+  ;; Define function to call when go-mode loads
+  (require 'go-guru)
+  ;;(require 'go-autocomplete)
 
-(defun my-go-mode-hook ()
-  (add-hook 'before-save-hook 'gofmt-before-save) ; gofmt before every save
-  (setq gofmt-command "goimports")                ; gofmt uses invokes goimports
+  (defun my-go-mode-hook ()
+    (add-hook 'before-save-hook 'gofmt-before-save) ; gofmt before every save
+    (setq gofmt-command "goimports")                ; gofmt uses invokes goimports
 
-  (if (not (string-match "go" compile-command))   ; set compile command default
-      (set (make-local-variable 'compile-command)
-           "go test -v && go vet"))
-  (local-set-key (kbd "M-p") 'projectile-compile-project) ; Invoke compiler
-  (local-set-key (kbd "M-P") 'recompile)          ; Redo most recent compile cmd
-  (local-set-key (kbd "M-*") 'pop-tag-mark)       ; Return from whence you came
-  (local-set-key (kbd "M-]") 'next-error)         ; Go to next error (or msg)
-  (local-set-key (kbd "M-[") 'previous-error)     ; Go to previous error or msg
+    (if (not (string-match "go" compile-command))   ; set compile command default
+        (set (make-local-variable 'compile-command)
+             "go test -v && go vet"))
+    (local-set-key (kbd "M-p") 'projectile-compile-project) ; Invoke compiler
+    (local-set-key (kbd "M-P") 'recompile)          ; Redo most recent compile cmd
+    (local-set-key (kbd "M-*") 'pop-tag-mark)       ; Return from whence you came
+    (local-set-key (kbd "M-]") 'next-error)         ; Go to next error (or msg)
+    (local-set-key (kbd "M-[") 'previous-error)     ; Go to previous error or msg
 
-  (evil-local-set-key 'normal (kbd "C-]") 'godef-jump)
+    (evil-local-set-key 'normal (kbd "C-]") 'godef-jump)
 
-  ;; do not highlight "tabs" in go mode
-  (set (make-local-variable 'whitespace-style) '(face empty lines-tail trailing))
+    ;; do not highlight "tabs" in go mode
+    (set (make-local-variable 'whitespace-style) '(face empty lines-tail trailing))
 
-  ;; guru settings
-  (go-guru-hl-identifier-mode)
-  ;; tab width of 4 spaces
-  (setq tab-width 4)
-  )
-  ;; enable auto-complete-mode
-  ;;(auto-complete-mode 1))
-
-(add-hook 'go-mode-hook 'my-go-mode-hook)
-
-;;(defun my-switch-project-hook ()
-;;  (go-set-project))
-;;(add-hook 'projectile-after-switch-project-hook #'my-switch-project-hook)
-
-(evil-leader/set-key-for-mode 'go-mode "god" 'godef-jump)
-(evil-leader/set-key-for-mode 'go-mode "goc" 'projectile-compile-project)
-(evil-leader/set-key-for-mode 'go-mode "got" 'projectile-test-project)
+    ;; guru settings
+    (go-guru-hl-identifier-mode)
+    ;; tab width of 4 spaces
+    (setq tab-width 4))
+  (add-hook 'go-mode-hook 'my-go-mode-hook)
+  (evil-leader/set-key-for-mode 'go-mode "god" 'godef-jump)
+  (evil-leader/set-key-for-mode 'go-mode "goc" 'projectile-compile-project)
+  (evil-leader/set-key-for-mode 'go-mode "got" 'projectile-test-project))
 
 ;; Ruby
-(evil-leader/set-key-for-mode 'ruby-mode "rt" 'rspec-verify-single)
-(evil-leader/set-key-for-mode 'ruby-mode "rf" 'rspec-verify)
+(use-package ruby-mode
+  :ensure t
+  :after evil-leader
+  :config
+  (evil-leader/set-key-for-mode 'ruby-mode "rt" 'rspec-verify-single)
+  (evil-leader/set-key-for-mode 'ruby-mode "rf" 'rspec-verify))
 
-;; JavaScript
-(add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
-(setq js-indent-level 2)
+
+;; Flycheck
+(use-package flycheck
+  :ensure t
+  :config
+  (global-flycheck-mode))
+
+;; Rust
+(use-package rust-mode
+  :ensure t
+  :config
+  (setq rust-format-on-save t))
+
+(use-package cargo
+  :ensure t)
+
+(use-package flycheck-rust
+  :ensure t
+  :after flycheck rust-mode
+  :config
+  (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
+
+;; wgrep
+(use-package wgrep
+  :ensure t)
+
+;; erlang
+(use-package erlang
+  :ensure t)
+
+;; htmlize
+(use-package htmlize
+  :ensure t)
+
+;; alchemist
+(use-package alchemist
+  :ensure t)
+
+;; edit-indirect
+(use-package edit-indirect
+  :ensure t)
+
+;; go-autocomplete
+(use-package go-autocomplete
+  :ensure t)
+
+;; smooth-scrolling
+(use-package smooth-scrolling
+  :ensure t)
+
+;; wgrep
+(use-package wgrep
+  :ensure t)
+
+;; yaml-mode
+(use-package yaml-mode
+  :ensure t)
+
+;; slim-mode
+(use-package slim-mode
+  :ensure t)
+
+;; rjsx-mode
+(use-package rjsx-mode
+  :ensure t
+  :config
+  (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
+  (setq js-indent-level 2))
+
+;; rspec-mode
+(use-package rspec-mode
+  :ensure t)
+
+;; markdown-mode
+(use-package markdown-mode
+  :ensure t)
 
 ;; Magit
-(require 'evil-magit)
-(setq git-commit-summary-max-length 50)
-(setq magit-completing-read-function 'ivy-completing-read)
+(use-package magit
+  :ensure t
+  :after ivy
+  :config
+  (setq git-commit-summary-max-length 50)
+  (setq magit-completing-read-function 'ivy-completing-read))
+
+(use-package evil-magit
+  :ensure t
+  :after magit evil)
 
 ;; Tramp
 (setq tramp-default-method "ssh")
 
 ;; smooth-scrolling
-(require 'smooth-scrolling)
-(setq scroll-margin 5)
-(setq scroll-conservatively 9999)
-(setq scroll-step 1)
+(use-package smooth-scrolling
+  :ensure t
+  :config
+  (setq scroll-margin 5)
+  (setq scroll-conservatively 9999)
+  (setq scroll-step 1))
 
 ;; allow piping to jq
 
@@ -397,28 +496,8 @@
 
 (evil-leader/set-key "jq" 'pipe-to-jq)
 
-;; small compilation window
-
-(defun my-compile ()
-  "Run compile and resize the compile window"
-  (interactive)
-  (progn
-    (call-interactively 'compile)
-    (setq cur (selected-window))
-    (setq w (get-buffer-window "*compilation*"))
-    (select-window w)
-    (setq h (window-height w))
-    (shrink-window (- h 10))
-    (select-window cur)))
-
-(defun my-compilation-hook ()
-  "Make sure that the compile window is splitting vertically"
-  (progn
-    (if (not (get-buffer-window "*compilation*"))
-        (progn (split-window-vertically)))))
-
-(add-hook 'compilation-mode-hook 'my-compilation-hook)
-(global-set-key [f9] 'my-compile)
+(use-package espresso-theme
+  :ensure t)
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -434,6 +513,8 @@
  '(ibuffer-saved-filter-groups nil)
  '(org-agenda-files '("~/Dropbox/org/ioki-journal.org"))
  '(package-selected-packages
-   '(evil-collection evil-paredit ox-gfm evil-org evil-matchit color-theme-sanityinc-tomorrow evil-search-highlight-persist org erlang htmlize alchemist edit-indirect projectile-rails go-autocomplete switch-window smooth-scrolling rjsx-mode lenlen-theme projectile-ripgrep evil-visualstar evil-surround evil-commentary wgrep yaml-mode slim-mode evil-magit magit rspec-mode go-mode geiser exec-path-from-shell evil-leader markdown-mode ivy counsel-projectile projectile evil)))
+   '(ace ace-window ox-jira espresso-theme espresso srcery-theme inf-ruby rjsx-mode yaml-mode wgrep use-package switch-window smooth-scrolling slim-mode rspec-mode projectile-ripgrep ox-gfm htmlize go-mode go-autocomplete geiser flycheck-rust exec-path-from-shell evil-visualstar evil-surround evil-search-highlight-persist evil-org evil-matchit evil-magit evil-leader evil-commentary erlang edit-indirect counsel-projectile cargo alchemist)))
+                                        ;  '(package-selected-packages
+                                        ;    '(ox-jira twilight-bright-theme cargo rust-mode evil-collection evil-paredit ox-gfm evil-org evil-matchit color-theme-sanityinc-tomorrow evil-search-highlight-persist org erlang htmlize alchemist edit-indirect projectile-rails go-autocomplete switch-window smooth-scrolling rjsx-mode lenlen-theme projectile-ripgrep evil-visualstar evil-surround evil-commentary wgrep yaml-mode slim-mode evil-magit magit rspec-mode go-mode geiser exec-path-from-shell evil-leader markdown-mode ivy counsel-projectile projectile evil)))
 
 (put 'narrow-to-region 'disabled nil)
